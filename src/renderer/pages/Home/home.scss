@@ -1,0 +1,25 @@
+.home {
+  height: 100%;
+  color: #fff;
+  font-size: 12px;
+  cursor: default;
+  background-color: transparent;
+  .siderLeft {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0 50px;
+    background-color: transparent;
+  }
+  .siderRight {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0 50px;
+    background-color: transparent;
+  }
+  .main {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 50px;
+  }
+}

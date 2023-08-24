@@ -1,0 +1,130 @@
+@mixin sliderStyles {
+  .customerSlider {
+    flex: 1;
+    :global {
+      .ant-slider-handle {
+        width: 10px;
+        height: 10px;
+        margin-top: -2px;
+        background: #D8D8D9;
+        border-color: #D8D8D9;
+      }
+      .ant-slider-rail {
+        background: #D8D8D8;
+      }
+      .ant-slider-track {
+        background: #E53156;
+      }
+    }
+  }
+}
+.setting {
+//   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+//   height: 86px;
+  background: #171616;
+  border-radius: 10px;
+//   margin-bottom: 10px;
+  .tool {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+    .liveSetting {
+      width: 15px;
+      height: 15px;
+      margin-left: 37px;
+      cursor: pointer;
+    }
+    .voice {
+      display: flex;
+      width: 215px;
+      align-items: center;
+      justify-content: space-around;
+      img {
+        width: 16px;
+        height: 12px;
+        cursor: pointer;
+      }
+      @include sliderStyles;
+
+      span {
+         font-size: 14px;
+         color: #fff;
+      }
+    }
+    .microphone {
+      display: flex;
+      width: 215px;
+      align-items: center;
+      img {
+        width: 12px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      span {
+         font-size: 14px;
+         color: #fff;
+      }
+
+      @include sliderStyles;
+    }
+  }
+  .divider {
+    border: 1px solid #0E0E0F;
+    margin: 0 24px;
+  }
+  .settingInput {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 24px;
+    .inputArea {
+      display: flex;
+      gap: 12px;
+      .customInput {
+        background: #121212;
+        border: none;
+        color: #D8D8D9;
+        &::placeholder {
+          color: #4C5159;
+        }
+        &:focus {
+          border: 1px solid #0A84FF;
+        }
+      }
+    }
+  }
+}
+
+.liveBtn {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   width: 140px;
+   height: 40px;
+   font-size: 16px;
+   font-weight: 500;
+   color: #FFFFFF;
+   background: #E53156;
+   border-radius: 25px;
+   cursor: pointer;
+   margin-right: 23px;
+
+   img {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+   }
+
+   .line {
+      width: 1px;
+      height: 19px;
+      background: #FFFFFF;
+      margin-right: 7px;
+   }
+}

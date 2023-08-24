@@ -1,0 +1,211 @@
+.login {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   width: 100%;
+   height: 100%;
+   background-color: transparent;
+}
+
+.loginBox {
+   display: flex;
+   flex-direction: column;
+   justify-content: flex-start;
+   align-items: center;
+   max-width: 567px;
+   max-height: 680px;
+   width: 37.8%;
+   height: 68%;
+   min-height: 620px;
+   padding-top: 4%;
+   border-radius: 18px;
+   background-color: #fff;
+
+   .logo {
+      width: 76px;
+      height: 75px;
+   }
+
+   .loginTitle {
+      font-size: 24px;
+      font-weight: 600;
+      color: #19293F;
+      line-height: 32px;
+      margin: 13px 0 36px;
+   }
+
+   .loginComBox {
+      width: 298px;
+
+      .loginType {
+         display: flex;
+         width: 100%;
+         margin-bottom: 48px;
+
+         .loginTypeItem {
+            position: relative;
+            width: 50%;
+            height: 28px;
+            font-size: 20px;
+            color: #666666;
+            line-height: 28px;
+            text-align: center;
+            cursor: pointer;
+
+            &.actived {
+               font-weight: 600;
+               color: #333333;
+
+               &::before {
+                  content: '';
+                  position: absolute;
+                  left: 50%;
+                  bottom: -5px;
+                  width: 34px;
+                  height: 3px;
+                  background-color: #E53156;
+                  transform: translateX(-50%);
+               }
+            }
+
+            &.leftBorder {
+
+               &::after {
+                  content: '';
+                  position: absolute;
+                  right: 0;
+                  top: 2px;
+                  width: 1px;
+                  height: 24px;
+                  background-color: #999999;
+               }
+            }
+         }
+      }
+
+      .inputPhoneBox {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         width: 100%;
+         height: 70px;
+         background: #F8F9FD;
+         border-radius: 5px;
+         margin-bottom: 11px;
+
+         :global {
+            .ant-select-selection-item {
+               font-size: 16px;
+            }
+
+            .ant-select-selector {
+               padding-right: 0;
+
+               .ant-select-arrow {
+                  color: #272636;
+               }
+            }
+
+            .ant-input {
+               width: 200px;
+               font-size: 16px;
+               color: #333333;   
+            }
+         }
+
+         .codeInput {
+            width: 150px;
+         }
+
+         .codeBtn {
+            padding-right: 14px;
+            font-size: 16px;
+            color: #FA2345;
+            cursor: pointer;
+
+            &.isLoading {
+               color: #999999;
+            }
+         }
+
+         .emailInput {
+            width: 100%;
+         }
+
+         .passwordInput {
+            width: 70%;
+         }
+
+         .showIcon {
+            width: 21px;
+            height: 24px;
+            margin-right: 14px;
+            cursor: pointer;
+         }
+      }
+   }
+}
+
+
+.inputPhoneOption {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   width: 100%;
+   height: 30px;
+   padding-left: 6px;
+   border-radius: 10px;
+
+   span {
+      font-size: 18px;
+      color: #333333;
+   }
+}
+
+.userTip {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   width: 100%;
+   margin: 54px 0 17px;
+
+   .tipCheckBox {
+      width: 20px;
+      height: 20px;
+      margin-right: 11px;
+      cursor: pointer;
+   }
+
+   .tipText {
+      font-size: 14px;
+      color: #666666;
+      line-height: 20px;
+
+      .tipLink {
+         color: #0B65DF;
+         cursor: pointer;
+
+         &:hover {
+            text-decoration: underline;
+         }
+      }
+   }
+}
+
+
+.loginBtn {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   width: 300px;
+   height: 58px;
+   font-size: 20px;
+   color: #FFFFFF;
+   background: #D8D8D8;
+   border-radius: 29px;
+   cursor: pointer;
+
+   &.canLogin {
+      background: linear-gradient(225deg, #FC5652 0%, #EA41A6 100%);
+   }
+}

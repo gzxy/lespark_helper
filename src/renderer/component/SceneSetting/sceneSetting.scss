@@ -1,0 +1,29 @@
+.sceneSetting {
+   width: 269px;
+   height: 138px;
+   padding: 15px 14px 0 22px;
+   background: rgba(255, 255, 255, 0.15);
+   border-radius: 10px;
+
+   .settingItem {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      color: #FFFFFF;
+      margin-bottom: 25px;
+
+
+      .checkBtn {
+         display: flex;
+         align-items: center;
+         cursor: pointer;
+
+         img {
+            width: 17px;
+            height: 15px;
+            margin-right: 8px;
+         }
+      }
+   }
+}

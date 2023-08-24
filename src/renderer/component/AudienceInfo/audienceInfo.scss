@@ -1,0 +1,233 @@
+
+.audienceInfo {
+   width: 340px;
+   height: 349px;
+   padding: 20px 8px 15px 9px;
+   background: rgba(255, 255, 255, 0.15);
+   border-radius: 10px;
+ 
+   .title {
+     font-size: 18px;
+     color: #FFFFFF;
+     line-height: 25px;
+   }
+   .content {
+     width: 100%;
+     height: calc(100% - 30px);
+     padding-top: 14px;
+
+     :global {
+         .ant-list-item {
+            border: none;
+            padding: 7px 0;
+         }
+     }
+    
+     .viewerItem {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      height: 48px;
+      padding: 0 23px 0 15px;
+      border-radius: 10px;
+
+      &:hover, &.actived {
+         background: #222222;
+
+         .settingIcon {
+            display: block;
+         }
+      }
+      
+
+      .viewerInfo {
+         display: flex;
+         align-items: center;
+         width: 230px;
+         height: 100%;
+
+         img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+         }
+      }
+
+      .viewerName {
+         width: calc(100% - 57px);
+         font-size: 18px;
+         font-weight: 500;
+         color: #FFFFFF;
+         margin-left: 17px;
+         text-overflow: ellipsis;
+         overflow: hidden;
+         white-space: nowrap;
+      }
+      .settingIcon {
+         display: none;
+         width: 22px;
+         height: 21px;
+         cursor: pointer;
+      }
+     }
+
+     .giftItem {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding-left: 15px;
+
+      .viewerAvatar {
+         width: 40px;
+         height: 40px;
+         border-radius: 50%;
+      }
+
+      .giftInfo {
+         width: 250px;
+         padding-top: 7px;
+
+         .viewerName {
+            width: 100%;
+            font-size: 18px;
+            font-weight: 500;
+            color: #FFFFFF;
+            line-height: 25px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+         }
+
+         .pointInfo {
+            font-size: 14px;
+            color: #CFCFCF;
+            
+            span {
+               color: #E53156;
+               line-height: 20px;
+            }
+         }
+
+         .giftList {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            margin-top: 3px;
+
+            .gift {
+               display: flex;
+               align-items: center;
+               margin-right: 10px;
+               margin-bottom: 5px;
+
+               .giftIcon {
+                  width: 28px;
+                  height: 28px;
+                  margin-right: 5px;
+               }
+
+               .giftCount {
+                  font-size: 14px;
+                  font-weight: 500;
+                  color: #E53156;
+               }
+            }
+         }
+      }
+     }
+   }
+
+   .tabBox {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      height: 30px;
+
+      .tabTypeItem {
+         position: relative;
+         min-width: 80px;
+         max-width: 50%;
+         height: 25px;
+         font-size: 18px;
+         color: #ddd9da;
+         line-height: 25px;
+         text-align: center;
+         cursor: pointer;
+         margin-left: 11px;
+   
+         &.actived {
+            font-weight: 600;
+            color: #fff;
+   
+            &::before {
+               content: '';
+               position: absolute;
+               left: 50%;
+               bottom: -5px;
+               width: 34px;
+               height: 3px;
+               background-color: #E53156;
+               transform: translateX(-50%);
+            }
+         }
+
+         &.tabTypeGift {
+            margin-right: 40px;
+         }
+   
+         &.leftBorder {
+   
+            &::after {
+               content: '';
+               position: absolute;
+               right: 0;
+               top: 2px;
+               width: 1px;
+               height: 24px;
+               background-color: #999999;
+            }
+         }
+      }
+     }
+ }
+
+ :global {
+   .ant-popover-placement-bottomRight {
+     .ant-popover-arrow {
+      display: none;
+     }
+
+     .ant-popover-inner-content {
+      padding: 0;
+     }
+     
+     .ant-popover-inner {
+      background-color: transparent;
+      box-shadow: none;
+     }
+   }
+}
+
+
+ .settingPopover {
+   width: 205px;
+   height: 234px;
+   padding: 5px 10px;
+   background: #222222;
+   box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.5);
+   border-radius: 10px;
+   border: 1px solid #979797;
+
+   .settingItem {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 42px;
+      font-size: 18px;
+      font-weight: 400;
+      color: #FFFFFF;
+      cursor: pointer;
+   }
+ }
