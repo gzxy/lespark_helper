@@ -6,7 +6,10 @@ import {
   AudioScenarioType,
   ClientRoleType,
   IMediaPlayerSourceObserver,
-  IMediaPlayer
+  IMediaPlayer,
+  VideoSourceType,
+  CameraCapturerConfiguration,
+  ScreenCaptureConfiguration
 } from 'agora-electron-sdk'
 import Config from '../config/agora.config'
 
@@ -111,7 +114,17 @@ export const createAgoraMediaPlayer = (listener: IMediaPlayerSourceObserver) => 
 }
 
 export const destroyAgoraMediaPlayer = (mediaPlayer: IMediaPlayer, listener: IMediaPlayerSourceObserver) => {
+  if (!mediaPlayer) {
+    return 0
+  }
   mediaPlayer.unregisterPlayerSourceObserver(listener)
-  const ret = rtcEngine?.destroyMediaPlayer(mediaPlayer)
+  const ret = rtcEngine.destroyMediaPlayer(mediaPlayer)
   return ret
+}
+export const startAgoraCameraCapture = (type: VideoSourceType, config: CameraCapturerConfiguration) => {
+  return rtcEngine.startCameraCapture(type, config)
+}
+
+export const startAgoraScreenCaptureBySourceType = (type: VideoSourceType, config: ScreenCaptureConfiguration) => {
+  return rtcEngine.startScreenCaptureBySourceType(type, config)
 }

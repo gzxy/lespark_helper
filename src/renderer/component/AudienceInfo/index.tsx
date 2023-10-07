@@ -1,12 +1,14 @@
 import { FC, useCallback, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { List, Popover } from 'antd';
+import { List, Popover, message } from 'antd';
 import VirtualList from 'rc-virtual-list';
 import cx from 'classnames'
 import styles from './audienceInfo.scss'
 import { RootState } from '../../store/index'
 import { getResourcePath } from '../../utils/index'
-import { ILiveViewer, ILiveGift } from '../../store/live'
+import { ILiveViewer, ILiveGift, setLiveViewers } from '../../store/live'
+import { setConfirmShow } from '../../store/global'
+import apis from '../../services/live'
 
 
 const settingIcon = getResourcePath('settingIcon.png')
@@ -14,6 +16,7 @@ const AudienceInfo: FC = () => {
   console.log('----render LiveTool')
   const {
    live: {
+      liveRoomInfo,
       liveViewers,
       liveGifts
    }
@@ -45,18 +48,223 @@ const AudienceInfo: FC = () => {
       console.log('giftListScroll====>', e);
       
    },[])
+
+   const handleConnectViewer = useCallback((viewer:ILiveViewer)=>{
+      setSettingShowId('')
+      apis.checkVerify({
+         user_id: viewer.user_id,
+         live_obj_id: liveRoomInfo.live_obj_id
+      }).then(res=>{
+         if(res.error === 0) {
+            if(res.data.is_real_verify && res.data.is_verify) {
+               // 此处邀请用户上麦，需要客户端发送 im 消息
+            }else{
+               message.info('该用户未通过认证')
+            }
+         }else{
+            message.error(res.msg)
+         }
+         
+      })
+   }, [settingShowId, liveRoomInfo])
+
+   const handleSetManager = useCallback((viewer:ILiveViewer)=>{
+      setSettingShowId('')
+      apis.managerFamily({
+         user_id: viewer.user_id,
+         live_obj_id: liveRoomInfo.live_obj_id,
+         action: 0
+      }).then(res=>{
+         console.log('handleSetManager====<', res);
+         if(res.error === 0) {
+            const obj = {...viewer, is_family_manager: true }
+            updateViewers(obj, liveViewers)
+            dispatch(setConfirmShow({
+               content: `${viewer.nickname}已被设置为家族管理员`,
+               isSingleBtn: true,
+               okText: '知道了',
+               onOk() {
+               },
+               onCancel() {
+                  console.log('Cancel');
+               },
+            }))
+         } else if(res.error === 23501){
+            dispatch(setConfirmShow({
+               content: `${viewer.nickname}当前还不是家族成员,无法设置为家族管理员`,
+               okText: '邀请加入',
+               isSingleBtn: true,
+               onOk() {
+                  
+                  dispatch(setConfirmShow({
+                     content: '已发送邀请',
+                     isSingleBtn: true,
+                     okText: '知道了',
+                     onOk() {
+                     },
+                     onCancel() {
+                        console.log('Cancel');
+                     },
+                  }))
+               },
+               onCancel() {
+                  console.log('Cancel');
+               },
+             }))
+         } else{
+            let msg = res.msg
+            if(res.data && res.data.toast) {
+               msg = res.data.toast
+            }
+            message.error(msg)
+         }
+      })
+   },[settingShowId, liveRoomInfo, liveViewers])
+
+   const updateViewers = (viewer:ILiveViewer, viewers:ILiveViewer[])=>{
+      const list = viewers.map(e=>e)
+      const index = list.findIndex(e=>e.user_id === viewer.user_id)
+      if(index > -1) {
+         list.splice(index, 1, viewer)
+         dispatch(setLiveViewers(list)) 
+      }
+   }
+
+   const cancelSetManager = useCallback((viewer:ILiveViewer)=>{
+      setSettingShowId('')
+      apis.cancelManagerFamily({
+         user_id: viewer.user_id,
+         live_obj_id: liveRoomInfo.live_obj_id
+      }).then(res=>{
+         if(res.error === 0) {
+            const obj = {...viewer, is_family_manager: false }
+            updateViewers(obj, liveViewers)
+            message.info(`已取消${viewer.nickname}的家族管理员身份`)
+         }else{
+            message.error(res.msg)
+         }
+      })
+   }, [settingShowId, liveRoomInfo, liveViewers])
+
+   const handleReportAudience = useCallback((viewer:ILiveViewer)=>{
+      setSettingShowId('')
+      dispatch(setConfirmShow({
+         content: `确定要举报${viewer.nickname}吗？`,
+         okText: '确定',
+         cancelText: '取消',
+         onOk() {
+            apis.reportAudience({
+               exposed_id: viewer.user_id,
+               room_id: liveRoomInfo.live_obj_id
+            }).then(res=>{
+               if(res.error === 0) {
+                  dispatch(setConfirmShow({
+                     content: `已成功举报${viewer.nickname}`,
+                     isSingleBtn: true,
+                     okText: '知道了',
+                     onOk() {
+                     },
+                     onCancel() {
+                        console.log('Cancel');
+                     },
+                  }))
+                  
+               }else{
+                  let msg = res.msg
+                  if(res.data && res.data.toast) {
+                     msg = res.data.toast
+                  }
+                  message.error(msg)
+               }
+            })
+            
+         },
+         onCancel() {
+            console.log('Cancel');
+         },
+       }))
+   },[settingShowId, liveRoomInfo])
+
+   const handleKickingUser = useCallback((viewer:ILiveViewer)=>{
+      setSettingShowId('')
+      dispatch(setConfirmShow({
+         content: `确定要踢出${viewer.nickname}吗？`,
+         okText: '确定',
+         cancelText: '取消',
+         onOk() {
+            apis.kickingUser({
+               user_id: viewer.user_id,
+               live_obj_id: liveRoomInfo.live_obj_id
+            }).then(res=>{
+               if(res.error === 0) {
+                  const list = liveViewers.map(e=>e)
+                  const index = list.findIndex(e=>e.user_id === viewer.user_id)
+                  if(index > -1) {
+                     list.splice(index, 1)
+                     dispatch(setLiveViewers(list)) 
+                  }
+                  dispatch(setConfirmShow({
+                     content: `已踢出${viewer.nickname}`,
+                     isSingleBtn: true,
+                     okText: '知道了',
+                     onOk() {
+                     },
+                     onCancel() {
+                        console.log('Cancel');
+                     },
+                  }))
+                  
+               }else{
+                  let msg = res.msg
+                  if(res.data && res.data.toast) {
+                     msg = res.data.toast
+                  }
+                  message.error(msg)
+               }
+            })
+            
+         },
+         onCancel() {
+            console.log('Cancel');
+         },
+       }))
+   },[settingShowId, liveRoomInfo, liveViewers])
+
+   const handleSilence = useCallback((viewer:ILiveViewer)=>{
+      setSettingShowId('')
+      apis.silenceUser({
+         user_id: viewer.user_id,
+         live_obj_id: liveRoomInfo.live_obj_id,
+         cancel: viewer.isSilence? 1 : 0
+      }).then(res=>{
+         if(res.error === 0) {
+            const obj = {...viewer, isSilence: !viewer.isSilence }
+            updateViewers(obj, liveViewers)
+         } else{
+            let msg = res.msg
+            if(res.data && res.data.toast) {
+               msg = res.data.toast
+            }
+            message.error(msg)
+         }
+      })
+
+   }, [settingShowId, liveRoomInfo, liveViewers])
    
    const settingPopover = useMemo(()=>{
+      const viewer = liveViewers.find(e=>e.user_id === settingShowId)
       return (
          <div className={styles.settingPopover}>
-            <div className={styles.settingItem}>邀请连麦</div>
-            <div className={styles.settingItem}>设为家族管理员</div>
-            <div className={styles.settingItem}>举报</div>
-            <div className={styles.settingItem}>禁言</div>
-            <div className={styles.settingItem}>踢出</div>
+            <div className={styles.settingItem} onClick={()=>viewer && handleConnectViewer(viewer)}>邀请连麦</div>
+            <div className={styles.settingItem} onClick={()=>{
+               viewer && (viewer.is_family_manager? cancelSetManager(viewer) : handleSetManager(viewer))
+            }}>{ viewer && viewer.is_family_manager? '取消家族管理员' : '设为家族管理员' } </div>
+            <div className={styles.settingItem} onClick={()=>viewer && handleReportAudience(viewer)}>举报</div>
+            <div className={styles.settingItem} onClick={()=>viewer && handleSilence(viewer)}>{ viewer && (viewer.isSilence? '取消禁言' : '禁言') || '禁言'} </div>
+            <div className={styles.settingItem} onClick={()=>viewer && handleKickingUser(viewer)}>踢出</div>
          </div>
       )
-   }, [])
+   }, [settingShowId, liveViewers, handleConnectViewer, handleSetManager, handleReportAudience, handleKickingUser, handleSilence])
 
    const viewerList = useMemo(()=>{
 
@@ -79,8 +287,8 @@ const AudienceInfo: FC = () => {
                            <img src={ item.avatar }  />
                            <span className={styles.viewerName}>{ item.nickname }</span>
                         </div>
-                        <Popover placement="bottomRight" content={settingPopover} trigger="click" onOpenChange={(e)=>{handleSettingChange(e, item.user_id)}}>
-                           <img src={`file://${settingIcon}`} className={styles.settingIcon}  />
+                        <Popover open={ settingShowId === item.user_id } placement="bottomRight" content={settingPopover} trigger="click" onOpenChange={(e)=>{handleSettingChange(e, item.user_id)}}>
+                           <img src={`file://${settingIcon}`} className={styles.settingIcon} />
                         </Popover>
                         
                     </div>

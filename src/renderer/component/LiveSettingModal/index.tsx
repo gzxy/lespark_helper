@@ -59,6 +59,11 @@ const LiveSettingModal: FC = () => {
          select_tag: liveDec,
          pic: ''
       })
+      setisExamine(false)
+      if (res.error !== 0 ) {
+        message.error(res.msg)
+        return 
+      }
       dispatch(createLive(res.data))
       liveSettingOptions.beginToLiveFn && liveSettingOptions.beginToLiveFn(res.data)
       console.log('res=====>', res);

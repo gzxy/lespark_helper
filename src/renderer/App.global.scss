@@ -105,6 +105,10 @@ body,
          margin-top: 0;
          height: 50px;
 
+         &.single-btn {
+            justify-content: center;
+         }
+
          .confirm-btn {
             display: flex;
             justify-content: center;

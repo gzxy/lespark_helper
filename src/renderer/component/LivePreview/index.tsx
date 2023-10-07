@@ -10,6 +10,7 @@ import { DownOutlined,UpOutlined } from '@ant-design/icons'
 import { message, Dropdown, Menu, Modal } from 'antd'
 import { resetUserInfo } from '../../store/login'
 import { setConfirmShow } from '../../store/global'
+import { setTemplate } from '../../store/live'
 import CameraModal from '../CameraModal'
 import VirtualBackgroundModal from '../VirtualBackgroundModal'
 import CaptureWinModal from '../CaptureWinModal'
@@ -26,13 +27,16 @@ import {
   IMediaPlayerSourceObserver,
   MediaPlayerState,
   MediaPlayerError,
-  ScreenCaptureSourceType
+  ScreenCaptureSourceType,
+  ScreenCaptureConfiguration
 } from 'agora-electron-sdk'
 import { 
   rtcEngine, 
   getVideoDevices, 
   createAgoraMediaPlayer, 
   destroyAgoraMediaPlayer,
+  startAgoraCameraCapture,
+  startAgoraScreenCaptureBySourceType,
   IDevice 
 } from '../../services/agoraApi'
 const loginOutIcon = getResourcePath('loginout.png')
@@ -86,11 +90,13 @@ const LivePreview: React.FC = () => {
       userInfo,
    },
    live: {
+      isLiving,
       liveRoomInfo,
-      isHorizontalScreen
+      isHorizontalScreen,
    }
- } = useSelector((s: RootState) => s)
- const isAgoraInit = useSelector((s: RootState) => s.global.agoraInit)
+  } = useSelector((s: RootState) => s)
+  const template = useSelector((s: RootState) => s.live.template)
+  const isAgoraInit = useSelector((s: RootState) => s.global.agoraInit)
   const history = useHistory();
   const dispatch = useDispatch()
   const videoBox = useRef<HTMLDivElement>(null)
@@ -138,9 +144,47 @@ const LivePreview: React.FC = () => {
       if(timeout.current) {
          clearTimeout(timeout.current)
       }
-      timeout.current = setTimeout(resizeVideoBox,100)
+      timeout.current = setTimeout(resizeVideoBox,50)
    })
   })
+
+  useEffect(() => {
+    console.log('----template is update: ', template)
+    if (!template) {
+      return
+    }
+    let existIndex = transCodeSources.current.findIndex((item) => {
+      return item.id === template?.info.id
+    })
+    if (existIndex < 0) {
+      transCodeSources.current.push(template?.info)
+      if (template.type === 'image' || template.type === 'gif') {
+        handlePreview()
+      } else if (template.type === 'video') {
+        if (!mediaPlayer.current) {
+          createMediaPlayer()
+        }
+        mediaPlayer.current?.open(template.extraInfo,0)
+        handlePreview()
+      } else if(template.type === 'camera') {
+        const ret = startAgoraCameraCapture(VideoSourceType.VideoSourceCameraPrimary, template.extraInfo)
+        if (ret === 0) {
+          handlePreview()
+        } else {
+          message.error('模版素材已失效，请更新模版')
+        }
+      } else if (template.type === 'fullScreen' || template.type === 'window') {
+        //let type =  getCameraType()
+        //setScreenShareObjStatus(type, true)
+        const ret = startAgoraScreenCaptureBySourceType(VideoSourceType.VideoSourceScreen, template.extraInfo)
+        if (ret === 0) {
+          handlePreview()
+        } else {
+          message.error('模版已失效，请更新模版')
+        }
+      }
+    }
+  }, [template])
 
   useEffect(() => {
    setIsHorizontal(isHorizontalScreen)
@@ -185,7 +229,7 @@ const LivePreview: React.FC = () => {
     isHorizontalRef.current = isHorizontal
     console.log('layout is change isHorizontal: ',isHorizontalRef.current)
     handleStopPreview()
-    setTimeout(resizeVideoBox,300)
+    setTimeout(resizeVideoBox,100)
    
   }, [isHorizontal])
 
@@ -518,7 +562,7 @@ const LivePreview: React.FC = () => {
       return item.id === configuration.deviceId
     })
     if (existIndex < 0) {
-      transCodeSources.current.push({
+      const config = {
         id: configuration.deviceId!,
         source: {
           sourceType: type,
@@ -531,9 +575,15 @@ const LivePreview: React.FC = () => {
           zOrder: transCodeSources.current.length+2,
           alpha: 1
         }
-      })
-
+      }
+      transCodeSources.current.push(config)
       setCameraTypeStatus(type, true)
+      dispatch(setTemplate({
+        type: 'camera',
+        name: devices[selectIndex].deviceName,
+        info: config,
+        extraInfo: configuration
+      }))
     }
     handlePreview()
   }
@@ -602,7 +652,7 @@ const LivePreview: React.FC = () => {
       {
         return
       }
-      let ret = rtcEngine?.startScreenCaptureBySourceType(type,{
+      const screenCaptureConfig: ScreenCaptureConfiguration = {
         isCaptureWindow: false,
         displayId: fullScreenSource.sourceId,
         params: {
@@ -614,29 +664,17 @@ const LivePreview: React.FC = () => {
           excludeWindowList: [],
           excludeWindowCount: 0,
         }
-      })
-      /*
-      let ret = rtcEngine?.startScreenCaptureByDisplayId(
-        fullScreenSource.sourceId,
-        { width: 0, height: 0, x: 0, y: 0 },
-        {
-          dimensions: { width: 1920, height: 1080 },
-          bitrate: 1000,
-          frameRate: 15,
-          captureMouseCursor: false,
-          windowFocus: false,
-          excludeWindowList: [],
-          excludeWindowCount: 0,
-        }
-      )*/
+      }
+      let ret = rtcEngine?.startScreenCaptureBySourceType(type,screenCaptureConfig)
       console.log('---startScreenCaptureByDisplayId ret: ',ret)
+      console.log('---transCodeSources: ',transCodeSources.current)
       if (ret === 0) {
         let existIndex = transCodeSources.current.findIndex((item) => {
           //return item.source.sourceType === type
           return item.id === fullScreenSource.sourceId
         })
         if (existIndex < 0) {
-          transCodeSources.current.push({
+          const config = {
             id: fullScreenSource.sourceId,
             source: {
               sourceType: type,
@@ -647,9 +685,15 @@ const LivePreview: React.FC = () => {
               zOrder: transCodeSources.current.length+2,
               alpha: 1
             }
-          })
-
+          }
+          transCodeSources.current.push(config)
           setScreenShareObjStatus(type, true)
+          dispatch(setTemplate({
+            type: 'fullScreen',
+            name: fullScreenSource.sourceName,
+            info: config,
+            extraInfo: screenCaptureConfig
+          }))
         }
         handlePreview()
       } else {
@@ -681,8 +725,7 @@ const LivePreview: React.FC = () => {
     {
       return
     }
-
-    let ret = rtcEngine?.startScreenCaptureBySourceType(type,{
+    const areaScreenConfig: ScreenCaptureConfiguration = {
       isCaptureWindow: false,
       displayId: areaScreenSource!.sourceId,
       regionRect: { width: rect.width, height: rect.height, x: rect.x, y: rect.y },
@@ -695,20 +738,9 @@ const LivePreview: React.FC = () => {
         excludeWindowList: [],
         excludeWindowCount: 0,
       }
-    })
-    // let ret = rtcEngine?.startScreenCaptureByDisplayId(
-    //   areaScreenSource!.sourceId,
-    //   { width: rect.width, height: rect.height, x: rect.x, y: rect.y },
-    //   {
-    //     dimensions: { width: 1920, height: 1080 },
-    //     bitrate: 1000,
-    //     frameRate: 15,
-    //     captureMouseCursor: false,
-    //     windowFocus: false,
-    //     excludeWindowList: [],
-    //     excludeWindowCount: 0,
-    //   }
-    // )
+    }
+
+    let ret = rtcEngine?.startScreenCaptureBySourceType(type,areaScreenConfig)
     console.log('---addScreenAreaSource ret: ',ret)
     if (ret === 0) {
       let existIndex = transCodeSources.current.findIndex((item) => {
@@ -717,7 +749,7 @@ const LivePreview: React.FC = () => {
         //return item.id === areaScreenSource!.sourceId
       })
       if (existIndex < 0) {
-        transCodeSources.current.push({
+        const config = {
           id: areaScreenSource!.sourceId,
           source: {
             sourceType: type,
@@ -728,9 +760,15 @@ const LivePreview: React.FC = () => {
             zOrder: transCodeSources.current.length+2,
             alpha: 1
           }
-        })
-
+        }
+        transCodeSources.current.push(config)
         setScreenShareObjStatus(type, true)
+        dispatch(setTemplate({
+          type: 'areaScreen',
+          name: areaScreenSource?.sourceName,
+          info: config,
+          extraInfo: areaScreenConfig
+        }))
       }
       handlePreview()
     } else {
@@ -779,6 +817,11 @@ const LivePreview: React.FC = () => {
     return capWinSources.length;
   }
 
+  const getFileNameByFilePath = (filePath: string) => {
+    const parts = filePath.split('/')
+    const fileName = parts[parts.length - 1]
+    return fileName
+  }
 
   const handleAddMediaSource = (srcUrl: string, type: string) => {
     console.log('-----handleAddMediaSource srcUrl: ',srcUrl, 'type: ', type)
@@ -800,7 +843,7 @@ const LivePreview: React.FC = () => {
         return item.id === srcUrl
       })
       if (existIndex < 0) {
-        transCodeSources.current.push({
+        const config = {
           id: srcUrl,
           source: {
             sourceType,
@@ -812,7 +855,14 @@ const LivePreview: React.FC = () => {
             alpha: 1,
             imageUrl: srcUrl
           }
-        })
+        }
+        transCodeSources.current.push(config)
+        const fileName = getFileNameByFilePath(srcUrl)
+        dispatch(setTemplate({
+          type: type,
+          name: fileName,
+          info: config
+        }))
       }
     } else if (type === 'video') {
       if (!mediaPlayer.current) {
@@ -827,7 +877,7 @@ const LivePreview: React.FC = () => {
         return item.id === sourceId.toString()
       })
       if (existIndex < 0) {
-        transCodeSources.current.push({
+        const config = {
           id: sourceId.toString(),
           source: {
             sourceType,
@@ -839,7 +889,15 @@ const LivePreview: React.FC = () => {
             alpha: 1,
             mediaPlayerId: sourceId
           }
-        })
+        }
+        transCodeSources.current.push(config)
+        const fileName = getFileNameByFilePath(srcUrl)
+        dispatch(setTemplate({
+          type: type,
+          name: fileName,
+          info: config,
+          extraInfo: srcUrl
+        }))
       }
     }
     handlePreview()
@@ -952,6 +1010,10 @@ const LivePreview: React.FC = () => {
   }
 
   const handleLoginOut = ()=> {
+   if(isLiving) {
+      message.info('请在直播结束后再操作');
+      return
+   }
     dispatch(setConfirmShow({
           content: '确定要退出登录吗？',
           okText: '确认退出',
@@ -965,7 +1027,7 @@ const LivePreview: React.FC = () => {
                     message.error(res.msg);
                 }else{
                     dispatch(resetUserInfo())
-                    history.push("/")
+                    history.push("/Login")
                 }
               })
           },
@@ -1019,7 +1081,7 @@ const LivePreview: React.FC = () => {
       return
     }
 
-    let ret = rtcEngine?.startScreenCaptureBySourceType(type, {
+    const winCaptureConfig = {
       isCaptureWindow: true,
       windowId: selectCapWin.id,
       params: {
@@ -1031,7 +1093,9 @@ const LivePreview: React.FC = () => {
         excludeWindowList: [],
         excludeWindowCount: 0,
       }
-    })
+    }
+
+    let ret = rtcEngine?.startScreenCaptureBySourceType(type, winCaptureConfig)
     
     console.log('------handleSelectCaptureWinSource ret: ',ret)
     if (ret == 0) {
@@ -1054,8 +1118,16 @@ const LivePreview: React.FC = () => {
           id: selectCapWin.id,
           source: newSource
         })
-
         setScreenShareObjStatus(type, true)
+        dispatch(setTemplate({
+          type: 'window',
+          name: selectCapWin.sourceName,
+          info: {
+            id: selectCapWin.id,
+            source: newSource
+          },
+          extraInfo: winCaptureConfig
+        }))
       }
       handlePreview()
     } else {

@@ -10,7 +10,6 @@ import Home from './pages/Home'
 import Capture from './pages/Capture'
 import Login from './pages/Login'
 import store from './store'
-import TrafficLight from './component/TrafficLight'
 import ConfirmModal from './component/ConfirmModal'
 import LiveSettingModal from "./component/LiveSettingModal";
 import LiveStatisticsModal from './component/LiveStatisticsModal'
@@ -27,13 +26,12 @@ const App :React.FC = () => {
    
   return (
    <Provider store={store}>
-      <TrafficLight />
       <Router>
-      <Switch>
-         <Route path="/capture" children={<Capture />} />
-         <Route path="/Home" children={<Home />} />
-         <Route path="/" children={<Login />} />
-      </Switch>
+        <Switch>
+          <Route path="/capture" children={<Capture />} />
+          <Route path="/Login" children={<Login />} />
+          <Route path="/" children={<Home />} />
+        </Switch>
       </Router>
       <ConfirmModal />
       <LiveSettingModal />

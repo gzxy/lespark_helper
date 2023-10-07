@@ -2,17 +2,18 @@
 
 .temp {
   width: 269px;
-  height: calc(100% - 239px - 138px);
+  height: calc(100% - 139px - 100px);
   padding: 20px 0;
   .tempTitle {
-    font-size: 18px;
+    font-size: 16px;
     color: #FFFFFF;
     line-height: 25px;
+    padding-left: 7px;
   }
   .tempContent {
     width: 100%;
     height: 100%;
-    padding: 15px 22px;
+    padding: 15px 13px 10px 14px;
     background: rgba(255, 255, 255, 0.15);
     border-radius: 10px;
   }
@@ -20,5 +21,47 @@
   .tempBody {
       width: 100%;
       height: calc(100% - 25px);
+      padding-top: 10px;
+      overflow: auto;
+
+      .tempItem {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         width: 100%;
+         height: 36px;
+         padding: 0 11px 0 16px;
+         border-radius: 10px;
+
+         .tempName {
+            max-width: 160px;
+            font-size: 14px;
+            color: #FFFFFF;
+            line-height: 20px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+         }
+
+         .operationBox {
+            display: none;
+            justify-content: space-between;
+            width: 53px;
+
+            .operationIcon {
+               width: 21px;
+               height: 24px;
+               cursor: pointer;
+            }
+         }
+
+         &:hover {
+            background: #222222;
+
+            .operationBox {
+               display: flex;
+            }
+         }
+      }
   }
 }

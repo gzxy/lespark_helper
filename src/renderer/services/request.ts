@@ -30,7 +30,8 @@ const createRequest = ({
     },
     error => {
       if (ignoreError) {
-        return Promise.reject((error.response && error.response.data) || error)
+        //return Promise.reject((error.response && error.response.data) || error)
+        console.error('request error: ',error.response)
       }
 
       const originalRequest = error.config;
@@ -70,16 +71,24 @@ const createRequest = ({
           }
         })
           .then(response => {
-            const { access_token, refresh_token } = response.data;
-            localStorage.setItem('token', access_token);
-            localStorage.setItem('refresh_token', refresh_token);
-            axios.defaults.headers.common['token'] = access_token;
-            originalRequest.headers.token = access_token;
-            return axios(originalRequest);
+            console.log('response=====>', response);
+            if (response.data.error === 410) {
+              console.log('------登录过期！！')
+              window.location.hash = '#Login'
+            } else {
+              const { access_token, refresh_token } = response.data;
+              localStorage.setItem('token', access_token);
+              localStorage.setItem('refresh_token', refresh_token);
+              axios.defaults.headers.common['token'] = access_token;
+              originalRequest.headers.token = access_token;
+              return axios(originalRequest).then(res => {return res.data}).catch((err) => {
+                console.error(err)
+              });
+            }
           });
       }
      
-      return Promise.reject(error)
+      console.error('request error: ',error.response)
     },
   )
   return (apisRecord: any, headers?: { [key: string]: string }) =>

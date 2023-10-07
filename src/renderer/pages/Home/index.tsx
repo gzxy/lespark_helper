@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { IRtcEngineEventHandler } from 'agora-electron-sdk'
 import { useSelector, useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
+import { useMount } from 'ahooks'
 import styles from './home.scss'
 import { Layout, message } from 'antd'
 import { RootState } from '../../store/index'
@@ -12,7 +14,9 @@ import AudienceInfo from '../../component/AudienceInfo'
 import InteractiveMsg from '../../component/InteractiveMsg'
 import LivePreview from '../../component/LivePreview'
 import Setting from '../../component/Setting'
+import TrafficLight from '../../component/TrafficLight'
 import apis from '../../services/live'
+import { getToken } from '../../utils/token'
 import { rtcEngineInit, rtcEngineRelease, IConfig} from '../../services/agoraApi'
 const { Sider, Content } = Layout
 
@@ -20,6 +24,15 @@ const Home: React.FC = () => {
   const userInfo = useSelector((s: RootState) => s.login.userInfo)
   const appConfig = useSelector((s: RootState) => s.global.appConfig)
   const dispatch = useDispatch()
+  const history = useHistory();
+
+  useMount(()=>{
+   const token = getToken()
+	if(!token) {
+		history.push("/Login")
+		return
+	}
+  })
 
   useEffect(() => {
     console.log('----home userInfo: ', userInfo)
@@ -77,38 +90,43 @@ const Home: React.FC = () => {
     },
 
     onLocalVideoStats:(connection, stats)=>{
-      console.log(`onLocalVideoStats: ${stats.sentBitrate},${stats.sentFrameRate}`)
+      //console.log(`onLocalVideoStats: ${stats.sentBitrate},${stats.sentFrameRate}`)
     },
   }
 
   const getAppConfig = () => {
    apis.getLiveInfo({}).then(res =>{
       console.log('getLiveInfo===>', res);
-      if (res.error ===  0) {
+      if (res && res.error ===  0) {
         dispatch(setAppConfig({
-          agora_appid: res.data.agora_appid,  //声网appid
-	        im_appid: res.data.im_appid
+          agora_appid: res.data && res.data.agora_appid!,  //声网appid
+	        im_appid: res.data && res.data.im_appid!
         }))
+      } else {
+        window.location.hash = '#Login'    //未获取到配置，重新登录
       }
    }) 
   }
 
   return (
-    <Layout className={ styles.home }>
-      <Sider width={314} className={ styles.siderLeft }>
-        <SceneSetting />
-        <Template />
-        <LiveTool />
-      </Sider>
-      <Content className={styles.main}>
-        <LivePreview />
-        <Setting />
-      </Content>
-      <Sider width={386} className={ styles.siderRight }>
-        <AudienceInfo />
-        <InteractiveMsg />
-      </Sider>
-    </Layout>
+    <>
+      <TrafficLight/>
+      <Layout className={ styles.home }>
+        <Sider width={314} className={ styles.siderLeft }>
+          <SceneSetting />
+          <Template />
+          <LiveTool />
+        </Sider>
+        <Content className={styles.main}>
+          <LivePreview />
+          <Setting />
+        </Content>
+        <Sider width={386} className={ styles.siderRight }>
+          <AudienceInfo />
+          <InteractiveMsg />
+        </Sider>
+      </Layout>
+    </>
   )
 }
 

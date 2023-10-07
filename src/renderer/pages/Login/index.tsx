@@ -12,6 +12,7 @@ import { setUserInfo } from '../../store/login'
 import { getToken } from '../../utils/token'
 import { getResourcePath } from '../../utils/index'
 import styles from './login.scss'
+import TrafficLight from '../../component/TrafficLight'
 
 const logo = getResourcePath('lespark_logo.png')
 const hideIcon = getResourcePath('hide.png')
@@ -52,7 +53,7 @@ const LoginPage: FC = () => {
 		console.log('userInfo====>',userInfo);
 		const token = getToken()
 		if(token) {
-				history.push("/Home")
+				history.push("/")
 				return
 		}
 		const localAccount = localStorage.getItem('localAccount')
@@ -131,7 +132,7 @@ const LoginPage: FC = () => {
             localStorage.setItem('localPhone', JSON.stringify({region: region,phone: phone}))
          }
          
-         history.push("/Home")
+         history.push("/")
          dispatch(setUserInfo(res.data))
 
       }
@@ -175,7 +176,7 @@ const LoginPage: FC = () => {
 			if (ret.error !== 0) {
 				message.error('获取验证码失败，请使用其它登录方式')
 			} else {
-				setReference(ret.reference_id)
+				setReference(ret.data.reference_id)
 			}
       setCodeTime(59)
       setCodeFlag(true)
@@ -211,67 +212,71 @@ const LoginPage: FC = () => {
    }, [])
 
    return (
-      <div className={styles.login}>
-         {contextHolder}
-         <div className={styles.loginBox}>
-            <img className={styles.logo} src={`file://${logo}`} alt="logo" />
-            <span className={styles.loginTitle}>LesPark直播伴侣</span>
-            <div className={styles.loginComBox}>
-               <div className={styles.loginType}>
-                  <div  className={cx({
-                  [styles.loginTypeItem]: true,
-                  [styles.leftBorder]: true,
-                  [styles.actived]: activedType === 1,
-                  })} onClick={()=>handleSelectType(1)}>手机号登录</div>
-                  <div className={cx({
-                  [styles.loginTypeItem]: true,
-                  [styles.actived]: activedType === 2,
-                  })} onClick={()=>handleSelectType(2)}>密码登录</div>
-               </div>
-               {activedType === 1 && (<div className={styles.inputPhoneBox}>
-                  <Select
-                     defaultValue={region}
-                     style={{ width: 80 }}
-                     bordered={false}
-                     optionLabelProp="label"
-                     popupClassName='inputPhoneOptionBox'
-                     onChange={handleRegionChange}
-                  >
-                     {phoneInput}
-                  </Select>
-                  <Input placeholder="手机号" defaultValue={phone} bordered={false} maxLength={11} onChange={handlePhoneChange} />
-               </div>
-               )}
-               {activedType === 1 && (<div className={styles.inputPhoneBox}>
-                  <Input placeholder="验证码" defaultValue={code} className={styles.codeInput} bordered={false} maxLength={11} onChange={handleCodeChange} />
-                  <div className={ cx({
-                     [styles.codeBtn]: true,
-                     [styles.isLoading]: codeFlag
-                  })} onClick={handleSendCode}>
-                     {codeFlag? codeBtnText : '获取验证码'}
-                  </div>
-               </div>)}
-               {activedType === 2 && (<div className={styles.inputPhoneBox}>
-                  <Input placeholder="请输入手机号或邮箱" defaultValue={account} className={styles.emailInput} bordered={false} onChange={handleAccountChange} />
-               </div>)}
+		 <>
+		  <TrafficLight/>
+			<div className={styles.login}>
+					{contextHolder}
+					<div className={styles.loginBox}>
+							<img className={styles.logo} src={`file://${logo}`} alt="logo" />
+							<span className={styles.loginTitle}>LesPark直播伴侣</span>
+							<div className={styles.loginComBox}>
+								<div className={styles.loginType}>
+										<div  className={cx({
+										[styles.loginTypeItem]: true,
+										[styles.leftBorder]: true,
+										[styles.actived]: activedType === 1,
+										})} onClick={()=>handleSelectType(1)}>手机号登录</div>
+										<div className={cx({
+										[styles.loginTypeItem]: true,
+										[styles.actived]: activedType === 2,
+										})} onClick={()=>handleSelectType(2)}>密码登录</div>
+								</div>
+								{activedType === 1 && (<div className={styles.inputPhoneBox}>
+										<Select
+											defaultValue={region}
+											style={{ width: 80 }}
+											bordered={false}
+											optionLabelProp="label"
+											popupClassName='inputPhoneOptionBox'
+											onChange={handleRegionChange}
+										>
+											{phoneInput}
+										</Select>
+										<Input placeholder="手机号" defaultValue={phone} bordered={false} maxLength={11} onChange={handlePhoneChange} />
+								</div>
+								)}
+								{activedType === 1 && (<div className={styles.inputPhoneBox}>
+										<Input placeholder="验证码" defaultValue={code} className={styles.codeInput} bordered={false} maxLength={11} onChange={handleCodeChange} />
+										<div className={ cx({
+											[styles.codeBtn]: true,
+											[styles.isLoading]: codeFlag
+										})} onClick={handleSendCode}>
+											{codeFlag? codeBtnText : '获取验证码'}
+										</div>
+								</div>)}
+								{activedType === 2 && (<div className={styles.inputPhoneBox}>
+										<Input placeholder="请输入手机号或邮箱" defaultValue={account} className={styles.emailInput} bordered={false} onChange={handleAccountChange} />
+								</div>)}
 
-               {activedType === 2 && (<div className={styles.inputPhoneBox}>
-                  <Input placeholder="请输入密码" defaultValue={password} type={isPasswordShow? 'text' : 'password'} className={styles.passwordInput} bordered={false} onChange={handlePasswordChange} />
-                  <img className={styles.showIcon} src={isPasswordShow? `file://${showIcon}` : `file://${hideIcon}`} alt="" onClick={handleShowChange} />
-               </div>)}
-            </div>
-            <div className={styles.userTip}>
-               <img className={styles.tipCheckBox} src={isRead? `file://${checkedIcon}` : `file://${checkBoxIcon}`} alt="" onClick={handleReadChange} />
-               <span className={styles.tipText}>我已仔细阅读并同意 
-                  <span className={styles.tipLink} onClick={()=>handleJumpWeb(1)}>《LesPark使用条款》</span>和
-                   <span className={styles.tipLink} onClick={()=>handleJumpWeb(2)}>《隐私政策》</span></span>
-            </div>
-            <div className={cx({
-                     [styles.loginBtn]: true,
-                     [styles.canLogin]: isRead && (activedType === 1 && phone && code || activedType === 2 && account && password)
-                  })} onClick={handleLogin}>登录</div>
-         </div>
-      </div>
+								{activedType === 2 && (<div className={styles.inputPhoneBox}>
+										<Input placeholder="请输入密码" defaultValue={password} type={isPasswordShow? 'text' : 'password'} className={styles.passwordInput} bordered={false} onChange={handlePasswordChange} />
+										<img className={styles.showIcon} src={isPasswordShow? `file://${showIcon}` : `file://${hideIcon}`} alt="" onClick={handleShowChange} />
+								</div>)}
+							</div>
+							<div className={styles.userTip}>
+								<img className={styles.tipCheckBox} src={isRead? `file://${checkedIcon}` : `file://${checkBoxIcon}`} alt="" onClick={handleReadChange} />
+								<span className={styles.tipText}>我已仔细阅读并同意 
+										<span className={styles.tipLink} onClick={()=>handleJumpWeb(1)}>《LesPark使用条款》</span>和
+										<span className={styles.tipLink} onClick={()=>handleJumpWeb(2)}>《隐私政策》</span></span>
+							</div>
+							<div className={cx({
+											[styles.loginBtn]: true,
+											[styles.canLogin]: isRead && (activedType === 1 && phone && code || activedType === 2 && account && password)
+										})} onClick={handleLogin}>登录</div>
+					</div>
+				</div>
+			</>
+      
    )
 }
 

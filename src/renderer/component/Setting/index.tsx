@@ -21,7 +21,6 @@ const finishLiveIcon = getResourcePath('finishLive.png')
 const localUid = 100566
 
 const Setting: React.FC = () => {
-  console.log('----render setting')
   const {
    live: {
       isLiving,
@@ -122,6 +121,7 @@ const Setting: React.FC = () => {
   }
 
   const handleLive = useCallback(()=>{
+    console.log('---------')
    if(!isLiving) {
       //开启直播设置
       dispatch(setLiveSettingModalFn({
@@ -188,8 +188,8 @@ const Setting: React.FC = () => {
         </div>
         {!isLiving && (<div className={styles.liveBtn} onClick={handleLive}> 开始直播 </div>)} 
         {isLiving && (
-         <div className={styles.liveBtn}> 
-            <img onClick={handleLive} src={`file://${finishLiveIcon}`} alt="" />
+         <div className={styles.liveBtn} onClick={handleLive}> 
+            <img src={`file://${finishLiveIcon}`} alt="" />
             <div className={styles.line}></div>
             <span>{liveDuringTimeStr}</span>
          </div>

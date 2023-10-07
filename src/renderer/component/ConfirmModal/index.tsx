@@ -27,9 +27,22 @@ const ConfirmModal: FC = () => {
    return (
       <Modal title="" centered={true} wrapClassName='defaultConfirm' destroyOnClose={true} open={isConfirmShow} onCancel={handleCancel}>
         <div className="confirm-content">{confirmOptions.content}</div>
-        <div className="confirm-btns">
-            <div className="confirm-btn" onClick={handleOK}>{confirmOptions.okText}</div>
-            <div className="confirm-btn btn-default"  onClick={handleCancel}>{confirmOptions.cancelText}</div>
+        <div className={ cx({
+         ["confirm-btns"]: true,
+         ['single-btn']: confirmOptions.isSingleBtn
+        }) } >
+         <div className={
+            cx({
+               ["confirm-btn"]: true,
+               ['btn-default']: confirmOptions.isRightDefault || confirmOptions.isSingleBtn
+              })
+           } onClick={handleOK}>{confirmOptions.okText}</div>
+           { !confirmOptions.isSingleBtn && ( <div className={
+               cx({
+                  ["confirm-btn"]: true,
+                  ['btn-default']: !confirmOptions.isRightDefault
+                 }) }   onClick={handleCancel}>{confirmOptions.cancelText}</div>)} 
+           
         </div>
       </Modal>
    )

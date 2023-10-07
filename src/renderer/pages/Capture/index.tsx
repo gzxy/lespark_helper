@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import styles from './Capture.scss'
 import { ipcRenderer } from 'electron'
 
@@ -9,6 +9,14 @@ const Capture: React.FC = () => {
   const captureDiv = useRef<HTMLDivElement| null>(null)
   const buttonRef = useRef<HTMLButtonElement|null>(null)
   const rect = useRef({x: 0, y: 0,width: 0, height: 0})
+
+  useEffect(() => {
+    const appElement = document.getElementById('app');
+    if (appElement) {
+      appElement.style.backgroundImage = 'none'; // 移除背景图片
+      appElement.style.paddingTop = '24px'; // 修改 padding-top
+    }
+  }, [])
 
   const handleMosueDown = (e) => {
 

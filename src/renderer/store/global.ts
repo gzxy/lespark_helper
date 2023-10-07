@@ -7,6 +7,8 @@ interface IConfirm {
 	okText?: string
 	cancelText?: string
 	wrapClassName?: string
+   isSingleBtn?: boolean
+   isRightDefault?: boolean
 	onOk?: () => void
 	onCancel?: () => void
 }

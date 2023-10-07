@@ -1,8 +1,12 @@
 declare namespace TemplateScssNamespace {
   export interface ITemplateScss {
+    operationBox: string;
+    operationIcon: string;
     temp: string;
     tempBody: string;
     tempContent: string;
+    tempItem: string;
+    tempName: string;
     tempTitle: string;
   }
 }

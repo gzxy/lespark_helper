@@ -23,6 +23,9 @@ export interface ILiveViewer {
    avatar: string
    nickname: string
    is_following: boolean
+   is_family_manager: boolean
+   guard_type?: number
+   isSilence: boolean
 }
 
 export interface IGift {
@@ -39,6 +42,14 @@ export interface ILiveGift {
    lmoney_total: number
 }
 
+export interface ITemplateItem {
+   name: string,
+	 type: string,
+   info: any,
+   isHide?: boolean,
+	 extraInfo? : any
+}
+
 export interface LiveReducer {
    liveRoomInfo: ILiveInfo
    liveRoomStatistics: IStatistics
@@ -46,6 +57,8 @@ export interface LiveReducer {
    isHorizontalScreen: boolean
    liveViewers: ILiveViewer[]
    liveGifts: ILiveGift[]
+   templateList: ITemplateItem[]
+   template: ITemplateItem | null
  }
 
  const initState = (): LiveReducer =>({
@@ -65,7 +78,9 @@ export interface LiveReducer {
    },
    isHorizontalScreen: true, //横屏
    liveViewers: [],
-   liveGifts: []
+   liveGifts: [],
+   templateList: JSON.parse(localStorage.getItem('template')!) || [],
+   template: null
  })
 
  export const requestLiveGifts: ()=> any = ()=>{
@@ -157,8 +172,6 @@ export interface LiveReducer {
    }
  )
 
-
-
  export const setLiveRoomInfo = createAction(
    '设置直播间信息',
    (liveRoomInfo: ILiveInfo)=>{
@@ -194,6 +207,34 @@ export interface LiveReducer {
    }
  )
 
+ export const setTemplate = createAction(
+	'设置模版素材',
+	(template: ITemplateItem) => {
+		console.log('-----------setTemplate: ', template)
+      const temp = { ...template, isHide: false}
+		return  temp
+	}
+)
+
+export const setTemplatePreview = createAction(
+	'设置模版预览',
+	(template: ITemplateItem) => {
+		console.log('------setTemplatePreview: ', template)
+		return  template
+	}
+)
+
+export const updateTemplate = createAction(
+	'修改模版素材列表',
+	(templateList: ITemplateItem[]) => {
+		console.log('------isUpdate templateList: ', templateList)
+
+      localStorage.removeItem('template')
+      localStorage.setItem('template', JSON.stringify(templateList))
+		return { templateList }
+	}
+)
+
  const reducer = handleActions({
    [setLiveRoomInfo.toString()]: (state, { payload }) => {
       return { ...state, ...payload }
@@ -215,6 +256,36 @@ export interface LiveReducer {
     },
     [setLiveGifts.toString()]: (state, { payload }) => {
       return { ...state, ...payload }
+    },
+    [setTemplate.toString()]: (state, { payload }) => {
+			const existingTemplateIndex = state.templateList.findIndex(
+				(template) => template.name === payload.name
+			)
+			if (existingTemplateIndex === -1) {
+				const data = {
+					...state,
+					templateList: [...state.templateList, payload],
+				}
+				
+				localStorage.removeItem('template');
+				localStorage.setItem('template', JSON.stringify(data.templateList));
+				
+				return data
+			} else {
+				// If the template with the same name exists, don't update anything
+				return state
+			}
+    },
+    [updateTemplate.toString()]: (state, { payload }) => {
+      return { ...state, ...payload }
+    },
+    [setTemplatePreview.toString()]: (state, { payload }) => {
+      return { 
+        ...state,
+				template: {
+					...payload
+				}
+      }
     },
  }, initState())
 

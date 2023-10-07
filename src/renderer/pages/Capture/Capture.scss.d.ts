@@ -1,5 +1,6 @@
 declare namespace CaptureScssNamespace {
   export interface ICaptureScss {
+    app: string;
     capture: string;
   }
 }
